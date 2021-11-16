@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Draggable circle</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .circle {
+        width: 100px;
+        height: 100px;
+        background-color: black;
+        border-radius: 50%;
+        position: relative;
+      }
+    </style>
+  </head>
+  <body id="body">
+    <div class="circle" id="circle" draggable="true"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+
+      const body = document.getElementById("body");
+      const circle = document.getElementById("circle");
+
+      circle.addEventListener("dragstart", dragstart_handler);
+      circle.addEventListener("dragend", dragend_handler);
+      body.addEventListener("drop", drop_handler);
+      body.addEventListener("dragover", dragover_handler);
+
+      function replace(x, y) {
+        circle.style.position = "absolute";
+        circle.style.left = x - 50 + "px";
+        circle.style.top = y - 50 + "px";
+      }
+
+      function dragstart_handler(e) {
+        circle.style.backgroundColor = "red";
+      }
+      function dragend_handler(e) {
+        e.preventDefault();
+        circle.style.backgroundColor = "black";
+        socket.emit("circle move", {
+          x: e.pageX,
+          y: e.pageY,
+        });
+      }
+
+      function dragover_handler(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      }
+
+      function drop_handler(e) {
+        e.preventDefault();
+      }
+
+      socket.on("circle move", function (coord) {
+        replace(coord.x, coord.y);
+      });
+    </script>
+  </body>
+</html>
